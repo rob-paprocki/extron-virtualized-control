@@ -1,0 +1,40 @@
+#!/bin/sh
+### BEGIN INIT INFO
+# Provides:          vca-firstboot-identity
+# Required-Start:    $local_fs
+# Required-Stop:
+# X-Start-Before:    extron_info.sh heripc
+# Default-Start:     S 2 3 4 5
+# Default-Stop:
+# Short-Description: Generate a unique VCA identity on first boot
+# Description:       If /opt/extron_config/.randomize-on-boot exists, regenerate a unique host
+#                    serial/MAC and 50-VCP pool BEFORE extron_info.sh/heripc read them, then clear
+#                    the flag. Makes a distributed image self-personalize (no two clones collide).
+### END INIT INFO
+CFG=/opt/extron_config
+FLAG=$CFG/.randomize-on-boot
+GEN=/usr/local/sbin/vca-firstboot-identity.py
+
+case "$1" in
+  start)
+    if [ -f "$FLAG" ]; then
+      logger -t vca-firstboot "randomizing VCA identity on first boot"
+      if /bin/python3 -I "$GEN"; then
+        # root-shell (2222) password follows the generated serial: unique per clone,
+        # discoverable from the unit/admin UI, and never the builder's own password.
+        SER=$(/bin/python3 -I -c 'import json,sys; sys.stdout.write(json.load(open("/opt/extron_config/vca_config.json"))["unitser"])' 2>/dev/null)
+        if [ -n "$SER" ]; then
+          echo "root:$SER" | chpasswd && logger -t vca-firstboot "root shell password set to host serial"
+        fi
+        rm -f "$FLAG"
+        : > "$CFG/.personalized"
+        logger -t vca-firstboot "VCA identity randomized; flag cleared"
+      else
+        logger -p local0.err -t vca-firstboot "identity generation FAILED; leaving flag set"
+      fi
+    fi
+    ;;
+  stop|restart|force-reload|reload|status) : ;;
+  *) echo "Usage: $0 {start}" >&2; exit 0 ;;
+esac
+exit 0

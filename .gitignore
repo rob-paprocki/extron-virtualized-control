@@ -1,0 +1,37 @@
+# secrets — never commit
+*.pw
+*_pass
+.vca_admin_pw
+.vca_luks_pass
+*.ghpat
+.ghpat
+id_ed25519*
+id_rsa*
+!*.pub
+*.cookies
+.r2_creds
+.vca_image_url
+
+# disk images / firmware blobs — too big and/or proprietary
+*.qcow2
+*.raw
+*.vmdk
+*.vhdx
+*.img
+*.fd
+*_impl.so
+
+# runtime / scratch
+*.log
+*-serial.log
+*.pid
+.build/
+
+# extracted / decompiled Extron material — proprietary, never commit
+decomp/
+extron-src/
+gcp-runtime/
+runtime/
+so-inventory/
+fw-bin/
+extronlib_API.txt
