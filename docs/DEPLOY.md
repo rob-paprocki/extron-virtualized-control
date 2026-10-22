@@ -1,67 +1,46 @@
 # Deploying the VCA image
 
 Step-by-step instructions for spinning up the virtual VCA-100 on each hypervisor. The disk
-image is **not** in this repo (it's Extron's proprietary firmware, and it's large). You host it
-yourself in a private Cloudflare R2 bucket and pull it with `curl`. Every deploy is the same two
-moves: **get the image**, then **import/boot it** on your platform.
+image isn't in git (it's large), but it's published for download, so every deploy is the same two
+moves: **get the image** (a plain `curl`), then **import/boot it** on your platform.
 
 The image self-personalizes on first boot (unique serial + MACs), so you can deploy the same file
 as many times as you want without collisions. See [FIRSTBOOT_IDENTITY.md](FIRSTBOOT_IDENTITY.md).
 
 ---
 
-## One-time: host the image in private R2
+## Get the image
 
-Do this once, on a trusted machine that has the qcow2 (e.g. the box you built it on).
+The image is published at:
 
-1. **Enable R2** in the Cloudflare dashboard (it asks for a payment method even for the free
-   10 GB tier) and create a bucket, e.g. `vca-images`.
-2. **Make an R2 API token:** dashboard → R2 → *Manage R2 API Tokens* → *Create* → "Object Read &
-   Write", scoped to that bucket. Note the **Access Key ID**, **Secret**, and your **account ID**.
-3. **Fill the creds file** and lock it down:
-   ```bash
-   cp scripts/r2-creds.example ~/.r2_creds
-   chmod 600 ~/.r2_creds
-   # edit ~/.r2_creds: account id, access key, secret, R2_BUCKET=vca-images
-   ```
-4. **Publish** (uploads the image, mints a presigned URL + checksum):
-   ```bash
-   sudo apt install -y python3-boto3        # Debian/Kali; or: pip install boto3
-   ./scripts/r2-publish-image.sh /path/to/vca-portable-1.02.qcow2
-   ```
-   This writes the presigned URL to `~/.vca_image_url` and the sha256 to
-   `~/.vca_image_url.sha256`. Both are gitignored; nothing secret enters the repo.
+    https://vca-images.rpaprocki.com/vca-portable-1.02.qcow2
+    sha256  8a17fded094157ca9e63d9be2ea1ae0c5f555e2bf26c8d7096e78ffa7da022a5
 
-> **Presigned URLs expire after 7 days** (an S3/R2 limit). To refresh without re-uploading:
-> ```bash
-> set -a; . ~/.r2_creds; set +a
-> python3 scripts/r2.py presign vca-portable-1.02.qcow2 604800 > ~/.vca_image_url
-> ```
-> Want a permanent URL instead? Put the bucket behind an R2 custom domain + Cloudflare Access
-> service token and `curl` it with two headers. Ask and we'll wire it up.
-
----
-
-## Get the image on the deploy host
-
-Copy `~/.vca_image_url` (and `.sha256`) to the machine doing the deploy, or export the URL:
+`vm/fetch-vca-image.sh` downloads it and verifies that checksum with zero config:
 
 ```bash
-# simplest — reads ~/.vca_image_url, verifies the checksum:
-./vm/fetch-vca-image.sh
-
-# fetch + convert to another disk format in one step:
-./vm/fetch-vca-image.sh --convert vmdk     # VMware
-./vm/fetch-vca-image.sh --convert raw      # TrueNAS / bhyve
-./vm/fetch-vca-image.sh --convert vhdx     # Hyper-V
-
-# from your workstation straight into a remote box over ssh (no file copy):
-VCA_IMAGE_URL="$(cat ~/.vca_image_url)" VCA_IMAGE_SHA256="$(cat ~/.vca_image_url.sha256)" \
-  ssh target 'bash -s' < vm/fetch-vca-image.sh
+./vm/fetch-vca-image.sh                     # -> vca-portable-1.02.qcow2
+./vm/fetch-vca-image.sh --convert vmdk      # fetch + make .vmdk (VMware)
+./vm/fetch-vca-image.sh --convert raw       # fetch + make .raw  (TrueNAS / bhyve)
+./vm/fetch-vca-image.sh --convert vhdx      # fetch + make .vhdx (Hyper-V)
 ```
 
-`run-vca-lan.sh` and `vca-proxmox.sh` call this automatically when the image isn't already present,
-so on those two you can skip the explicit fetch.
+`run-vca-lan.sh` and `vca-proxmox.sh` call this automatically when the image is absent, so on those
+two you can skip the explicit fetch. Or just `curl` the URL directly:
+
+```bash
+curl -fL https://vca-images.rpaprocki.com/vca-portable-1.02.qcow2 -o vca-portable-1.02.qcow2
+```
+
+**Hosting your own image instead (optional).** To serve a different image from your own private
+Cloudflare R2 bucket, point the tooling at it (nothing is hardcoded):
+
+1. `cp scripts/r2-creds.example ~/.r2_creds` (fill in account id / keys / bucket, `chmod 600`).
+2. `sudo apt install -y python3-boto3 && ./scripts/r2-publish-image.sh <image.qcow2>` — uploads it
+   and writes a presigned URL to `~/.vca_image_url` (+ `.sha256`), which the fetch tooling uses in
+   preference to the default. Presigned URLs expire after 7 days; re-mint with
+   `python3 scripts/r2.py presign <key> 604800 > ~/.vca_image_url`. Set `$VCA_IMAGE_URL` to override
+   per-command.
 
 ---
 

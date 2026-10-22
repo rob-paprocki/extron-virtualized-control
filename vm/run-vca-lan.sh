@@ -8,11 +8,11 @@ D=${VCA_DIR:-$HERE}                       # dir for image + logs/vars/pid (overr
 IMG=${1:-$D/vca-portable-1.02.qcow2}
 # auto-fetch from private R2 if the image isn't present (needs $VCA_IMAGE_URL or ~/.vca_image_url)
 if [ ! -f "$IMG" ]; then
-  if [ -x "$HERE/fetch-vca-image.sh" ] && { [ -n "${VCA_IMAGE_URL:-}" ] || [ -f "$HOME/.vca_image_url" ]; }; then
-    echo "image not found; fetching from R2 -> $IMG"
+  if [ -x "$HERE/fetch-vca-image.sh" ]; then
+    echo "image not found; fetching -> $IMG"
     "$HERE/fetch-vca-image.sh" --out "$IMG"
   else
-    echo "no image at $IMG and no R2 URL (\$VCA_IMAGE_URL / ~/.vca_image_url). Pass a path or publish to R2."; exit 1
+    echo "no image at $IMG and no fetch helper alongside this script. Pass an image path."; exit 1
   fi
 fi
 NAME=$(basename "$IMG" .qcow2)

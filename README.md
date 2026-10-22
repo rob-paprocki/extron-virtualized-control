@@ -1,8 +1,9 @@
 # Extron VCA-100 Virtualization — deployment tooling
 
 Tooling to deploy a portable Extron **VCA-100** appliance image on commodity hypervisors
-(QEMU/KVM, Proxmox, VMware, UTM, TrueNAS, Hyper-V). **You supply your own appliance image** —
-no Extron firmware, disk images, or reverse-engineering material are included here.
+(QEMU/KVM, Proxmox, VMware, UTM, TrueNAS, Hyper-V). The image is published separately and pulled
+with `curl` (see [docs/DEPLOY.md](docs/DEPLOY.md)); this repo is the tooling and docs, with no
+reverse-engineering material.
 
 > For appliances you own. Extron's firmware and software remain Extron's property and are not
 > distributed in this repository.
@@ -16,10 +17,12 @@ no Extron firmware, disk images, or reverse-engineering material are included he
 ## Quick start
 Full walkthrough in **[docs/DEPLOY.md](docs/DEPLOY.md)**. In short:
 
-1. Host your image once in a private bucket: `scripts/r2-publish-image.sh <image.qcow2>`.
-2. Deploy per hypervisor — `vm/fetch-vca-image.sh` (plain `curl`, optional `--convert vmdk|raw|vhdx`)
-   then your platform's import, or `vm/run-vca-lan.sh` / `scripts/vca-proxmox.sh`, which fetch
-   automatically when the image is absent.
+1. Get the image (published at `https://vca-images.rpaprocki.com/vca-portable-1.02.qcow2`):
+   `./vm/fetch-vca-image.sh` downloads and checksum-verifies it with no config.
+2. Deploy per hypervisor: add `--convert vmdk|raw|vhdx` for VMware/TrueNAS/Hyper-V, or use
+   `vm/run-vca-lan.sh` / `scripts/vca-proxmox.sh`, which fetch automatically when the image is absent.
+
+To host your own image privately instead, see [docs/DEPLOY.md](docs/DEPLOY.md) (`scripts/r2-publish-image.sh`).
 
 ## Key tools
 | tool | what it does |

@@ -49,6 +49,7 @@ FIXVTLP=yes; yesno "Point deployed virtual panels (VTLP) at the local VCP so the
 # you deploy straight from private R2 with a plain curl — no secret lives in this script.
 IMG_URL_DEFAULT="${VCA_IMAGE_URL:-}"
 [ -z "$IMG_URL_DEFAULT" ] && [ -f "$HOME/.vca_image_url" ] && IMG_URL_DEFAULT=$(cat "$HOME/.vca_image_url")
+[ -z "$IMG_URL_DEFAULT" ] && IMG_URL_DEFAULT="https://vca-images.rpaprocki.com/vca-portable-1.02.qcow2"
 if [ -z "$IMG_SRC" ]; then
   IMG_SRC=$(ask "Path or URL to vca-portable.qcow2" "${IMG_URL_DEFAULT:-/root/vca-portable.qcow2}")
 fi

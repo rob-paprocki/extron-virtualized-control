@@ -28,15 +28,20 @@ while [ $# -gt 0 ]; do
   esac
 done
 
+# Public image (default). Override with $VCA_IMAGE_URL or ~/.vca_image_url (e.g. a private
+# presigned URL) if you host your own.
+DEFAULT_URL="https://vca-images.rpaprocki.com/vca-portable-1.02.qcow2"
+DEFAULT_SHA="8a17fded094157ca9e63d9be2ea1ae0c5f555e2bf26c8d7096e78ffa7da022a5"
 URL=${VCA_IMAGE_URL:-}
 [ -z "$URL" ] && [ -f "$HOME/.vca_image_url" ] && URL=$(cat "$HOME/.vca_image_url")
-[ -n "$URL" ] || { echo "no image URL (set \$VCA_IMAGE_URL or publish to R2 so ~/.vca_image_url exists)"; exit 1; }
+[ -z "$URL" ] && URL="$DEFAULT_URL"
 
 echo ">>> fetching image -> $OUT"
 curl -fSL --retry 3 --retry-delay 5 "$URL" -o "$OUT"
 
 SHA=${VCA_IMAGE_SHA256:-}
 [ -z "$SHA" ] && [ -f "$HOME/.vca_image_url.sha256" ] && SHA=$(cat "$HOME/.vca_image_url.sha256")
+[ -z "$SHA" ] && [ "$URL" = "$DEFAULT_URL" ] && SHA="$DEFAULT_SHA"
 if [ -n "$SHA" ]; then
   echo ">>> verifying sha256"
   echo "$SHA  $OUT" | sha256sum -c - || { echo "CHECKSUM MISMATCH"; exit 1; }
