@@ -14,7 +14,7 @@ as many times as you want without collisions. See [FIRSTBOOT_IDENTITY.md](FIRSTB
 The image is published at:
 
     https://vca-images.rpaprocki.com/vca-portable-1.02.qcow2
-    sha256  8a17fded094157ca9e63d9be2ea1ae0c5f555e2bf26c8d7096e78ffa7da022a5
+    sha256  abfab491a186dafbb0078119d80851f947cb5281c537f4b961313570620dd3d2
 
 `vm/fetch-vca-image.sh` downloads it and verifies that checksum with zero config:
 

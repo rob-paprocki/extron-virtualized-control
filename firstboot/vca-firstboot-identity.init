@@ -24,7 +24,7 @@ case "$1" in
         # discoverable from the unit/admin UI, and never the builder's own password.
         SER=$(/bin/python3 -I -c 'import json,sys; sys.stdout.write(json.load(open("/opt/extron_config/vca_config.json"))["unitser"])' 2>/dev/null)
         if [ -n "$SER" ]; then
-          echo "root:$SER" | chpasswd && logger -t vca-firstboot "root shell password set to host serial"
+          for u in root admin user; do echo "$u:$SER"; done | chpasswd && logger -t vca-firstboot "root/admin/user passwords set to host serial"
         fi
         rm -f "$FLAG"
         : > "$CFG/.personalized"
