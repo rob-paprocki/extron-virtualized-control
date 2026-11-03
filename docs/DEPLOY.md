@@ -65,8 +65,8 @@ its image prompt. To use a different image, put its URL in `~/.vca_image_url` (a
 ```bash
 bash scripts/vca-proxmox.sh
 ```
-It curls the image, verifies the checksum if you supplied one, and builds a Q35/OVMF VM. Leave the NIC firewall
-**off** so VCP MACs pass. For a second AV-LAN plane, answer yes to the dual-NIC prompt.
+It curls the image, verifies the checksum if you supplied one, and builds a Q35/OVMF VM. Leave the
+NIC firewall **off** so VCP MACs pass. For a second AV-LAN plane, answer yes to the dual-NIC prompt.
 
 ### VMware (Workstation / Fusion / ESXi)
 ```bash

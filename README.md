@@ -8,15 +8,15 @@ reverse-engineering material.
 > For appliances you own. Extron's firmware and software remain Extron's property and are not
 > distributed in this repository.
 
-The VCA-100 is Extron's Virtual Control Appliance. It hosts Virtual Control Processors (VCPs). Each
-VCP runs in its own container with its own serial and MAC address, and a deployment of this image
-starts five of them.
+The VCA-100 is Extron's Virtual Control Appliance, which hosts Virtual Control Processors (VCPs).
+Each VCP runs in its own container with its own serial and MAC address, and a deployment of this
+image starts five of them.
 
 ## Prerequisites
 - A hypervisor from the list above, with UEFI (OVMF) firmware. Hardware virtualization is
   recommended. Pure software emulation (TCG) is about 10 times slower.
 - 8 GB of RAM or more for the VM. More RAM means more VCPs.
-- A NIC and switch that allow multiple MACs, because each VCP presents its own MAC through macvlan.
+- A NIC and switch that allow multiple MACs (the Networking note below explains why).
 - `bash` and `curl` to fetch the image, plus `qemu-img` (from `qemu-utils`) if you use `--convert`.
 - For `vm/run-vca-lan.sh`: `qemu-system-x86_64`, the OVMF files under `/usr/share/OVMF`, and a
   bridge `br0` with your uplink enslaved and a `tap0` on it.
@@ -49,14 +49,16 @@ To host your own image privately instead, see [docs/DEPLOY.md](docs/DEPLOY.md) (
 | `scripts/vca-gen-identity.sh` | write a unique identity (serials + locally-administered `02:` MACs) into an image |
 | `firstboot/` | on first boot, self-generate a unique identity so no two clones collide |
 
-## Where settings live
-- Image URL: the `$VCA_IMAGE_URL` environment variable, else the file `~/.vca_image_url`, else the
-  built-in public URL. `vm/fetch-vca-image.sh` checks them in that order, and `scripts/vca-proxmox.sh`
-  uses the same sources as the default for its image prompt.
-- Image checksum: `$VCA_IMAGE_SHA256`, else the file `~/.vca_image_url.sha256`. The built-in URL has
-  a built-in checksum in the fetch script. The Proxmox script checks a sha256 only if one of these is set.
-- R2 credentials: `~/.r2_creds`, copied from `scripts/r2-creds.example`. Set `$R2_CREDS` to use
-  another path. You only need this to host your own image.
+## Settings
+The image URL comes from the `$VCA_IMAGE_URL` environment variable, else the file
+`~/.vca_image_url`, else the built-in public URL. `vm/fetch-vca-image.sh` checks them in that order,
+and `scripts/vca-proxmox.sh` uses the same sources as the default for its image prompt. The image
+checksum comes from `$VCA_IMAGE_SHA256`, else the file `~/.vca_image_url.sha256`. The built-in URL
+has a built-in checksum in the fetch script, and the Proxmox script checks a sha256 only if one of
+these is set. R2 credentials go in `~/.r2_creds`, copied from `scripts/r2-creds.example`; set
+`$R2_CREDS` to use another path. You only need them to host your own image.
+
+Per script:
 - `vm/run-vca-lan.sh`: `VCA_MEM` (default `10G`), `VCA_MAC` (guest MAC, default `02:61:8a:ec:a5:60`)
   and `VCA_DIR` (where the image, logs and UEFI vars file live, default the `vm/` directory). The
   image path is the first argument.
