@@ -25,8 +25,8 @@ The image is published at:
 ./vm/fetch-vca-image.sh --convert vhdx      # fetch + make .vhdx (Hyper-V)
 ```
 
-`run-vca-lan.sh` and `vca-proxmox.sh` call this automatically when the image is absent, so on those
-two you can skip the explicit fetch. Or just `curl` the URL directly:
+`run-vca-lan.sh` calls this automatically when the image is absent, and `vca-proxmox.sh` downloads
+the image itself, so on those two you can skip the explicit fetch. Or just `curl` the URL directly:
 
 ```bash
 curl -fL https://vca-images.rpaprocki.com/vca-portable-1.02.qcow2 -o vca-portable-1.02.qcow2
@@ -50,7 +50,7 @@ Every platform needs the same two things: **UEFI/OVMF firmware**, and a NIC/swit
 multiple MACs** (each VCP presents its own MAC via macvlan). Use hardware virtualization (KVM and
 friends) where you can. Pure software emulation (TCG) is ~10× slower.
 
-### Plain QEMU / KVM (Linux, incl. this Kali)
+### Plain QEMU / KVM (Linux)
 ```bash
 # bridged on br0 (VCPs get real DHCP leases); auto-fetches if the image is missing:
 VCA_MEM=10G VCA_MAC=02:... ./vm/run-vca-lan.sh
@@ -59,11 +59,13 @@ Prereqs: a bridge `br0` with your uplink enslaved and a `tap0` on it. No `/dev/k
 under TCG, just slowly.
 
 ### Proxmox VE
-On the Proxmox host, drop the presigned URL in `~/.vca_image_url` (and `.sha256`), then:
+Run the script as root on the Proxmox host. It offers the default public image URL as the answer to
+its image prompt. To use a different image, put its URL in `~/.vca_image_url` (and its checksum in
+`~/.vca_image_url.sha256`) first, or pass a path or URL as the first argument.
 ```bash
-bash vca-proxmox.sh
+bash scripts/vca-proxmox.sh
 ```
-It curls the image from R2, verifies the checksum, and builds a Q35/OVMF VM. Leave the NIC firewall
+It curls the image, verifies the checksum if you supplied one, and builds a Q35/OVMF VM. Leave the NIC firewall
 **off** so VCP MACs pass. For a second AV-LAN plane, answer yes to the dual-NIC prompt.
 
 ### VMware (Workstation / Fusion / ESXi)
