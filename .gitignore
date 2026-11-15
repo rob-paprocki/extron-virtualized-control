@@ -1,0 +1,62 @@
+# Secrets, never commit
+*.pw
+*_pass
+.vca_admin_pw
+.vca_luks_pass
+*.ghpat
+.ghpat
+id_ed25519*
+id_rsa*
+!*.pub
+*.cookies
+.r2_creds
+.vca_image_url
+
+# Disk images and firmware blobs: too big or proprietary
+*.qcow2
+*.raw
+*.vmdk
+*.vhdx
+*.img
+*.fd
+*_impl.so
+
+# runtime / scratch
+*.log
+*-serial.log
+*.pid
+.build/
+
+# extracted Extron material, never commit
+decomp/
+extron-src/
+gcp-runtime/
+runtime/
+so-inventory/
+fw-bin/
+extronlib_API.txt
+
+# local-only working material, never commit
+secring.gpg
+pubring.gpg
+trustdb.gpg
+*.eff
+*.eff.*
+*-decrypted.*
+*-plaintext.*
+xi-gnupg/
+qxi-gnupg/
+fw-extracted/
+/fw-analysis/
+
+# generated provisioning files
+*.seed.iso
+cloud-init/user-data
+cloud-init/meta-data
+cloud-init/network-config
+OVMF_VARS*.fd
+smoke.json
+__pycache__/
+*.pyc
+.claude/
+wordlist.local

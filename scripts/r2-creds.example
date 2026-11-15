@@ -1,0 +1,11 @@
+# Cloudflare R2 credentials for hosting the VCA image privately.
+# Copy to ~/.r2_creds, `chmod 600 ~/.r2_creds`, and fill in. NEVER commit the real file
+# (it is gitignored). Create the token in the Cloudflare dashboard:
+#   R2 -> Manage R2 API Tokens -> Create API token -> "Object Read & Write",
+#   scoped to the single bucket below.
+R2_ACCOUNT_ID=your_cloudflare_account_id_hex
+R2_ACCESS_KEY_ID=your_r2_access_key_id
+R2_SECRET_ACCESS_KEY=your_r2_secret_access_key
+R2_BUCKET=vca-images
+R2_KEY=vca-portable-1.02.qcow2
+R2_ENDPOINT=https://${R2_ACCOUNT_ID}.r2.cloudflarestorage.com
